@@ -1,0 +1,45 @@
+
+
+@model List<Microsoft.AspNetCore.Identity.IdentityUser>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
+
+<table class="table" id="userTable">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+</table>
+
+@section Scripts
+{
+    <script type="text/javascript">
+        jQuery.noConflict();
+        var table = $("#userTable").DataTable(
+            {
+                "serverSide": true,
+                "paging": true,
+                "processing": true,
+                "ajax": {
+                    "url": "@Url.Action("UserList", "AdminKullanicilar")",
+                    "type": "POST",
+                    "data": function (d) {
+                        d.username = $("#username").val();
+                    }
+                },
+                "columns": [
+                    { data: 'userName' },
+                    { data: 'email' }
+                ]
+            });
+
+        $("#btnRefresh").click(function () {
+            table.ajax.reload();
+        });
+
+    </script>
+}

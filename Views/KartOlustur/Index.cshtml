@@ -1,0 +1,15 @@
+@model farkli1001fikir.Models.CardModel
+
+<h2>Yeni bir kart oluştur</h2>
+
+<form asp-controller="KartOlustur" asp-action="SaveCard" method="post">
+    <div class="form-group">
+        <label for="Title">Başlık:</label>
+        <input type="text" class="form-control" id="Title" name="Title" required>
+    </div>
+    <div class="form-group">
+        <label for="Description">Açıklama:</label>
+        <textarea class="form-control" id="Description" name="Description" rows="4" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+</form>

@@ -1,0 +1,78 @@
+@model List<CardModel>
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+    }
+
+    h2 {
+        text-align: center;
+        color: #333;
+    }
+
+    li:hover {
+        transform: scale(1.05);
+    }
+
+    a.button {
+        display: inline-block;
+        padding: 10px;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        background-color: #4285f4; 
+        transition: background-color 0.3s;
+        margin-top: 10px;
+    }
+
+    a.button:hover {
+        background-color: #3a76c4;
+    }
+
+    form {
+        display: inline;
+        margin-top: 10px;
+    }
+
+    button {
+        padding: 10px;
+        color: #fff;
+        background-color: #ff5555; 
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #ff3333; 
+    }
+</style>
+
+<h2>Your Cards</h2>
+
+<ul>
+    @foreach (var card in Model)
+    {
+        <li>
+            <div>
+                <h3>@card.Title</h3>
+                <p>@card.Tags</p>
+                <p>Olumlu: @card.Upvotes | Olumsuz: @card.Downvotes</p>
+
+                <a asp-controller="Kartlarim" asp-action="Edit" asp-route-id="@card.Id" class="button">Düzenle</a>
+
+                <a asp-controller="KartDetaylari" asp-action="Index" asp-route-id="@card.Id" class="button">Detay</a>
+
+                <form asp-controller="Kartlarim" asp-action="Delete" method="post">
+                    <input type="hidden" name="id" value="@card.Id" />
+                    <button type="submit">Sil</button>
+                </form>
+            </div>
+        </li>
+    }
+</ul>
+

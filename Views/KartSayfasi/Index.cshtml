@@ -1,0 +1,155 @@
+@model List<farkli1001fikir.Models.CardModel>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+@inject farkli1001fikir.Data.ApplicationDbContext _context
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+    }
+
+    h2 {
+        text-align: center;
+        color: #333;
+    }
+
+    .card-list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .card.upvoted {
+    background-color: #8dff8d; 
+}
+
+.card.downvoted {
+    background-color: #ff8d8d;
+}
+
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin: 20px;
+        padding: 20px;
+        max-width: 300px;
+        text-align: center;
+        transition: transform 0.3s;
+    }
+
+    .card:hover {
+        transform: scale(1.05);
+    }
+
+    .card h3 {
+        font-size: 24px;
+        margin-bottom: 10px;
+        font-weight: bold;
+        color: #4285f4;
+    }
+
+    .card p {
+        margin: 5px 0;
+        color: #555;
+    }
+
+    .card .highlight {
+        font-weight: bold;
+        color: #4285f4;
+    }
+
+    .card .upvote-box {
+        background-color: #32f332;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 5px;
+    }
+
+    .card .downvote-box {
+        background-color: #f00e0e; 
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 5px;
+    }
+
+    .card .comment-count-box {
+        background-color: #fff;
+        color: #4285f4; 
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 5px;
+    }
+
+    .comment-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 10px;
+        color: #4285f4;
+        text-decoration: none;
+        border-radius: 5px;
+        background-color: #fff;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    .comment-button:hover {
+        background-color: #4285f4;
+        color: #fff;
+    }
+
+    .no-card {
+        text-align: center;
+        color: #777;
+        font-style: italic;
+    }
+</style>
+
+<h2>Kartları Keşfet</h2>
+
+@if (Model.Any())
+{
+    <div class="card-list">
+@foreach (var card in Model)
+{
+    var cardBackgroundColorClass = card.Upvotes > card.Downvotes
+        ? "upvoted"
+        : (card.Upvotes < card.Downvotes ? "downvoted" : "");
+
+    <div class="card @cardBackgroundColorClass">
+        <h3>@card.Title</h3>
+        <p><span class="highlight">Fikir sahibi:</span> @(await GetUsername(card.UserId))</p>
+        <p><span class="highlight">Oluşturulma tarihi:</span> @card.CreatedAt.ToString("MMMM dd, yyyy HH:mm")</p>
+        <p><span class="highlight">Son güncellenme tarihi:</span> @(card.UpdatedAt.HasValue ? card.UpdatedAt.Value.ToString("MMMM dd, yyyy HH:mm") : "N/A")</p>
+        <div class="upvote-box">@card.Upvotes</div>
+        <div class="downvote-box">@card.Downvotes</div>
+        <div class="comment-count-box">&#128172; @await GetCommentCount(card.Id)</div>
+        <a asp-controller="KartDetaylari" asp-action="Index" asp-route-id="@card.Id" class="comment-button">Detay</a>
+    </div>
+}
+
+    </div>
+}
+else
+{
+    <p class="no-card">Kart şu anda yok.</p>
+}
+
+@functions {
+    async Task<string> GetUsername(string userId)
+    {
+        var user = await UserManager.FindByIdAsync(userId);
+
+        return user?.UserName ?? "Unknown User";
+    }
+
+Task<int> GetCommentCount(int cardId)
+{
+    var commentCount = _context.Comments.Count(c => c.CardId == cardId);
+
+    return Task.FromResult(commentCount);
+}
+}

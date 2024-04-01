@@ -1,0 +1,101 @@
+@using System.Security.Claims
+@model farkli1001fikir.Models.CardDetailViewModel
+@inject farkli1001fikir.Data.ApplicationDbContext _context
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="card-details">
+    <h2>@Model.Card.Title</h2>
+    <p class="card-description">@Model.Card.Description</p>
+    <p class="posted-by">Fikir sahibi: @_context.Users.Find(Model.Card.UserId)?.UserName</p>
+    <div class="voting-section">
+        <form asp-controller="KartDetaylari" asp-action="Upvote" method="post">
+            <input type="hidden" name="cardId" value="@Model.Card.Id" />
+            <button type="submit" class="btn btn-primary">Olumlu</button>
+        </form>
+        <span class="upvotes-count">@Model.Card.Upvotes</span>
+
+        <form asp-controller="KartDetaylari" asp-action="Downvote" method="post">
+            <input type="hidden" name="cardId" value="@Model.Card.Id" />
+            <button type="submit" class="btn btn-danger">Olumsuz</button>
+        </form>
+        <span class="downvotes-count">@Model.Card.Downvotes</span>
+    </div>
+</div>
+
+<div class="comments-section">
+    <h4>Yorumlar:</h4>
+    <ul class="comment-list">
+        @if (Model.Comments != null)
+        {
+            @foreach (var comment in Model.Comments)
+            {
+                var commentUser = _context.Users.Find(comment.UserId);
+
+                <li class="comment-item">
+                    <div class="comment-header">
+                        <strong>@commentUser?.UserName:</strong>
+                        <span class="comment-date">
+                            @comment.CreatedAt.ToString("MMMM dd, yyyy HH:mm")
+                            @if (comment.UpdatedAt.HasValue && comment.UpdatedAt != comment.CreatedAt)
+                            {
+                                <span class="edited-info">(Son Güncellenme @comment.UpdatedAt.Value.ToString("MMMM dd, yyyy HH:mm"))</span>
+                            }
+                        </span>
+                    </div>
+                    <div class="comment-text">
+                        @comment.CommentText
+                    </div>
+                    <div class="comment-actions">
+                        @if (comment.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+                        {
+                            <text>
+                                <a href="#" onclick="editComment(@comment.Id)">Değiştir</a> |
+                                <a href="#" onclick="deleteComment(@comment.Id)">Sil</a>
+                            </text>
+                        }
+                    </div>
+                </li>
+            }
+        }
+    </ul>
+</div>
+
+<form class="comment-form" asp-controller="KartDetaylari" asp-action="ManageComment" method="post">
+    <input type="hidden" name="cardId" value="@Model.Card.Id" />
+
+    <input type="hidden" name="commentId" id="commentId" />
+
+    <div class="form-group">
+        <label for="commentText">Yorum ekle/düzenle:</label>
+        <textarea class="form-control" id="commentText" name="newText" rows="3" required></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary" id="manageCommentButton">Yorum yap</button>
+</form>
+
+<script>
+
+    function editComment(commentId, commentText) {
+        document.getElementById("commentId").value = commentId;
+        document.getElementById("commentText").value = commentText;
+        document.getElementById("manageCommentButton").innerText = "Yorumu Düzenle";
+        document.querySelector(".comment-form").action = "/KartDetaylari/ManageComment";
+    }
+
+    function deleteComment(commentId) {
+        if (confirm("Bu yorumu silmek istediğine emin misin?")) {
+            document.getElementById("commentId").value = commentId;
+            document.querySelector(".comment-form").action = "/KartDetaylari/ManageComment?isDelete=true";
+            document.getElementById("manageCommentButton").innerText = "Yorumu Sil";
+            document.querySelector(".comment-form").submit();
+        }
+    }
+</script>
+
+
